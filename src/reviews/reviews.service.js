@@ -1,6 +1,14 @@
 const db = require("../db/connection");
+const reduceProperties = require("../utils/reduce-properties");
 
 const tableName = "reviews";
+
+const addCritic = reduceProperties("review_id", {
+  critic_id: ["critic", "critic_id"],
+  preferred_name: ["critic", "preferred_name"],
+  surname: ["critic", "surname"],
+  organization_name: ["critic", "organization_name"],
+});
 
 async function destroy(reviewId) {
   // TODO: Write your code here
@@ -8,8 +16,17 @@ async function destroy(reviewId) {
 }
 
 async function list(movie_id) {
-  // TODO: Write your code here
-  return db(tableName).select("*").where({ movie_id });
+  return db("reviews as r")
+    .join("critics as c", "r.critic_id", "c.critic_id")
+    .select(
+      "r.*",
+      "c.critic_id",
+      "c.preferred_name",
+      "c.surname",
+      "c.organization_name"
+    )
+    .where({ movie_id })
+    .then(addCritic);
 }
 
 
